@@ -6,16 +6,16 @@ import 'dart:math' as math;
 import 'camera.dart';
 import 'bndbox.dart';
 
-class HomePage extends StatefulWidget {
+class ImageRecognition extends StatefulWidget {
   final List<CameraDescription> cameras;
 
-  const HomePage(this.cameras, {super.key});
+  const ImageRecognition(this.cameras, {super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _ImageRecognitionState createState() => _ImageRecognitionState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _ImageRecognitionState extends State<ImageRecognition> {
   List<dynamic> _recognitions = [];
   int _imageHeight = 0;
   int _imageWidth = 0;
