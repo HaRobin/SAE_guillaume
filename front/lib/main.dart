@@ -3,8 +3,11 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'home.dart';
 
+/*
 Future<void> main() async {
+  
   // Ensure that plugin services are initialized so that `availableCameras()`
   // can be called before `runApp()`
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +28,33 @@ Future<void> main() async {
       ),
     ),
   );
+}
+*/
+late List<CameraDescription> cameras;
+
+Future<Null> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    cameras = await availableCameras();
+  } on CameraException catch (e) {
+    print('Error: $e.code\nError Message: $e.message');
+  }
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'tflite real-time detection',
+      theme: ThemeData(
+        brightness: Brightness.dark,
+      ),
+      home: HomePage(cameras),
+    );
+  }
 }
 
 // A screen that allows users to take a picture using a given camera.
@@ -71,9 +101,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   //pas fini
   @override
-  void flipCamera(){
-    
-  }
+  void flipCamera() {}
 
   @override
   Widget build(BuildContext context) {
