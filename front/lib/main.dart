@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
       ),
-      home: Homepage(title: "test", cameras: cameras),
+      home: Homepage(title: "Guillaume", cameras: cameras),
     );
   }
 }

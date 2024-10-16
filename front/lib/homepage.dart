@@ -19,7 +19,7 @@ class Homepage extends StatelessWidget {
               return new ImageRecognition(cameras);
             }))
           }
-          , child: const Text("test"))
+          , child: const Text("Test camera"))
       ),
     );
   }
