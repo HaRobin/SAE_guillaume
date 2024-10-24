@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:front/homepage.dart';
-import 'imageRecognition.dart';
 
 /*
 Future<void> main() async {
