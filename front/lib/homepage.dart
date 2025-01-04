@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:front/ui/camera_view_widget.dart';
+import 'package:front/ui/search_bar_widget.dart';
 import 'package:front/models/screen_params.dart';
 
 class Homepage extends StatelessWidget {
@@ -13,16 +14,57 @@ class Homepage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
+        actions: [
+          SearchBarWidget()
+        ],
       ),
-      body: Center(
-          child: ElevatedButton(
-              onPressed: () => {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return CameraViewWidget();
-                    }))
-                  },
-              child: const Text("Test camera"))),
+      body: Center(child: Text("Historique : il faut le back pour ça")),
+      bottomNavigationBar: Row(
+        children: [
+          SizedBox(
+            width: (ScreenParams.screenSize.width / 2),
+            child: ElevatedButton(
+              style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0.0),
+                          side: BorderSide()))),
+              onPressed: () {},
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: const Icon(
+                  Icons.photo_library,
+                  color: Colors.white,
+                  size: 35.0,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: (ScreenParams.screenSize.width / 2),
+            child: ElevatedButton(
+                style: ButtonStyle(
+                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(0.0),
+                            side: BorderSide()))),
+                onPressed: () => {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return CameraViewWidget();
+                      }))
+                    },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: const Icon(
+                    Icons.photo_camera,
+                    color: Colors.white,
+                    size: 35.0,
+                  ),
+                )),
+          ),
+        ],
+      ),
     );
   }
 }
