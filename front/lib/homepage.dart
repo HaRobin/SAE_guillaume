@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:front/ui/camera_view_widget.dart';
 import 'package:front/ui/search_bar_widget.dart';
 import 'package:front/models/screen_params.dart';
+import 'package:front/ui/import_picture_widget.dart';
 
 class Homepage extends StatelessWidget {
   const Homepage({super.key, required this.title, required this.cameras});
@@ -14,9 +15,7 @@ class Homepage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
-        actions: [
-          SearchBarWidget()
-        ],
+        actions: [SearchBarWidget()],
       ),
       body: Center(child: Text("Historique : il faut le back pour ça")),
       bottomNavigationBar: Row(
@@ -29,7 +28,11 @@ class Homepage extends StatelessWidget {
                       RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(0.0),
                           side: BorderSide()))),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return ImportPictureWidget();
+                }));
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: const Icon(
