@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:front/homepage.dart';
+import 'package:oktoast/oktoast.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 /*
 Future<void> main() async {
@@ -38,6 +40,7 @@ Future<Null> main() async {
   } on CameraException catch (e) {
     print('Error: $e.code\nError Message: $e.message');
   }
+  PhotoManager.clearFileCache();
   runApp(MyApp());
 }
 
@@ -46,12 +49,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'tflite real-time detection',
-      theme: ThemeData(
-        brightness: Brightness.dark,
+    return OKToast(
+      child: MaterialApp(
+        title: 'tflite real-time detection',
+        theme: ThemeData(
+          brightness: Brightness.dark,
+        ),
+        home: Homepage(title: "Guillaume", cameras: cameras),
       ),
-      home: Homepage(title: "Guillaume", cameras: cameras),
     );
   }
 }
