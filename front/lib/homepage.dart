@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:front/ui/camera_view_widget.dart';
 import 'package:front/ui/search_bar_widget.dart';
 import 'package:front/models/screen_params.dart';
+import 'package:front/ui/import_picture_widget.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -59,6 +60,7 @@ class _HomepageState extends State<Homepage> {
     ScreenParams.screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       appBar: AppBar(
+
         title: Text(widget.title),
         actions: [SearchBarWidget()],
       ),
@@ -110,6 +112,7 @@ class _HomepageState extends State<Homepage> {
                       RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(0.0),
                           side: BorderSide()))),
+
               onPressed: () {fetchPhotos();},
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
