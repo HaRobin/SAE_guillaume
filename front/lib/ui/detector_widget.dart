@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:isolate';
+import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:front/display_picture_screen.dart';
 import 'package:front/models/recognition.dart';
 import 'package:front/models/screen_params.dart';
 import 'package:front/service/detector_service.dart';
@@ -105,6 +108,102 @@ class _DetectorWidgetState extends State<DetectorWidget>
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        // Provide an onPressed callback.
+        onPressed: () async {
+          // Take the Picture in a try / catch block. If anything goes wrong,
+          // catch the error.
+          try {
+            // Capture the image
+            final image = await _controller.takePicture();
+
+            if (!context.mounted) return;
+
+            // Load the captured image into a `ui.Image`
+            final capturedImage =
+                await decodeImageFromList(await image.readAsBytes());
+
+            // Create a picture recorder and canvas
+            final recorder = PictureRecorder();
+            final canvas = Canvas(recorder);
+
+            // Draw the captured image
+            final paint = Paint();
+            canvas.drawImage(capturedImage, Offset.zero, paint);
+
+            final double scaleX = capturedImage.width / 300;
+            final double scaleY = capturedImage.height / 300;
+
+            List<Recognition> theResults = [];
+
+            // Draw bounding boxes
+            if (results != null) {
+              theResults = results!;
+              for (var result in theResults) {
+                Color color = Colors.primaries[(result.label.length +
+                        result.label.codeUnitAt(0) +
+                        result.id) %
+                    Colors.primaries.length];
+
+                final rect = Rect.fromLTWH(
+                  result.location.left * scaleX,
+                  result.location.top * scaleY,
+                  result.location.width * scaleX,
+                  result.location.height * scaleY,
+                );
+                final boxPaint = Paint()
+                  ..color = color
+                  ..style = PaintingStyle.stroke
+                  ..strokeWidth = 6.0;
+                canvas.drawRect(rect, boxPaint);
+
+                final textPainter = TextPainter(
+                  text: TextSpan(
+                    text: '${result.label} ${result.score.toStringAsFixed(2)}',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        backgroundColor: color),
+                  ),
+                  textDirection: TextDirection.ltr,
+                );
+                textPainter.layout();
+                textPainter.paint(
+                    canvas,
+                    Offset(result.location.left * scaleX,
+                        result.location.top * scaleY + 5));
+              }
+            }
+
+            // Convert the canvas to an image
+            final picture = recorder.endRecording();
+            final img = await picture.toImage(
+              capturedImage.width,
+              capturedImage.height,
+            );
+
+            // Convert the image to bytes and save it
+            final byteData = await img.toByteData(format: ImageByteFormat.png);
+            final buffer = byteData!.buffer.asUint8List();
+
+            // Save the image to a file
+            final newFilePath = '${image.path}_with_boxes.png';
+            final newFile = await File(newFilePath).writeAsBytes(buffer);
+
+            // Navigate to display the new image with bounding boxes
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) =>
+                    DisplayPictureScreen(imagePath: newFile.path,results: theResults,),
+              ),
+            );
+          } catch (e) {
+            // If an error occurs, log the error to the console.
+            print(e);
+          }
+        },
+        child: const Icon(Icons.camera_alt),
       ),
     );
   }
