@@ -44,10 +44,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     super.dispose();
   }
 
-  //pas fini
-  @override
-  void flipCamera() {}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
