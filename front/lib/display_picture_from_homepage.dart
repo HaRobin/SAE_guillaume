@@ -29,11 +29,9 @@ class DisplayPictureFromHome extends StatelessWidget {
             return ListTile(title: Text('Loading...'));
           }
           final file = snapshot.data!;
-          
+
           return Scaffold(
             body: Image.file(file),
-            
-            
           );
         },
       ),
@@ -42,10 +40,10 @@ class DisplayPictureFromHome extends StatelessWidget {
 
   Future<void> showResults(BuildContext context) async {
     String result = "";
-    
+
     final file = await image.file;
     final exif = await Exif.fromPath(file!.path);
-    
+
     final attributes = await exif.getAttributes();
 
     attributes!.forEach((k, v) => result += "$k : $v\n");

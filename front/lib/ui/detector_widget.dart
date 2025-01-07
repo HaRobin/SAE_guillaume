@@ -10,7 +10,6 @@ import 'package:front/models/recognition.dart';
 import 'package:front/models/screen_params.dart';
 import 'package:front/service/detector_service.dart';
 import 'package:front/ui/box_widget.dart';
-import 'package:front/ui/detected_widget.dart';
 
 /// [DetectorWidget] sends each frame for inference
 class DetectorWidget extends StatefulWidget {
@@ -194,8 +193,8 @@ class _DetectorWidgetState extends State<DetectorWidget>
             // Navigate to display the new image with bounding boxes
             await Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) =>
-                    DisplayPictureScreen(imagePath: newFile.path,results: theResults),
+                builder: (context) => DisplayPictureScreen(
+                    imagePath: newFile.path, results: theResults),
               ),
             );
           } catch (e) {
@@ -207,25 +206,6 @@ class _DetectorWidgetState extends State<DetectorWidget>
       ),
     );
   }
-
-  Widget _detectedWidget() => (results != null)
-      ? Align(
-          alignment: Alignment.bottomCenter,
-          child: Container(
-            color: Colors.white.withAlpha(150),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: results!
-                    .map((e) => DetectedWidget(
-                        e.id.toString(), e.label, e.score.toString()))
-                    .toList(),
-              ),
-            ),
-          ),
-        )
-      : const SizedBox.shrink();
 
   /// Returns Stack of bounding boxes
   Widget _boundingBoxes() {
