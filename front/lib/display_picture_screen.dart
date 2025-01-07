@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:front/models/recognition.dart';
 import 'package:gal/gal.dart';
 import 'package:native_exif/native_exif.dart';
+import 'package:oktoast/oktoast.dart';
 
 class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
@@ -25,13 +26,16 @@ class DisplayPictureScreen extends StatelessWidget {
             }
 
             final exif = await Exif.fromPath(imagePath);
-
             for(var element in results){
               await exif.writeAttribute(element.label, "${element.score}");
             }
 
-            Gal.putImage(imagePath,album: "GuillaumeAI");
             await exif.close();
+
+            
+
+            Gal.putImage(imagePath,album: "GuillaumeAI");
+            showToast("Image enregistrée");
             
            }, icon: Icon(Icons.download),)
         ],

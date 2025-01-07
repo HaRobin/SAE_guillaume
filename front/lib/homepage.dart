@@ -2,11 +2,10 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:front/display_picture_from_homepage.dart';
 import 'package:front/ui/camera_view_widget.dart';
 import 'package:front/ui/search_bar_widget.dart';
 import 'package:front/models/screen_params.dart';
-import 'package:front/ui/import_picture_widget.dart';
-import 'package:oktoast/oktoast.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class Homepage extends StatefulWidget {
@@ -21,7 +20,6 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   List<AssetEntity> photos = [];
-  List<AssetPathEntity> thePaths = [];
 
   @override
   void initState() {
@@ -29,30 +27,23 @@ class _HomepageState extends State<Homepage> {
     fetchPhotos();
   }
 
-  //ça marche pas je vais hurler
+  //ça marche je vais hurler
   Future<void> fetchPhotos() async {
     final permission = await PhotoManager.requestPermissionExtend();
-    if (!permission.isAuth) {
-      print('Permission not granted');
+    if (permission.isAuth) {
+      final List<AssetPathEntity> paths = await PhotoManager.getAssetPathList();
+
+      AssetPathEntity? path =
+          paths.where((path) => path.name == "GuillaumeAI").first;
+
+      final assetList = await path.getAssetListPaged(page: 0, size: 100);
+
+      setState(() {
+        photos = assetList;
+      });
+    } else {
       return;
     }
-
-    final List<AssetPathEntity> paths = await PhotoManager.getAssetPathList();
-
-
-    setState(() {
-      thePaths = paths;
-    });
-
-
-    AssetPathEntity? path =
-        paths.where((path) => path.name == "GuillaumeAI").first;
-
-    final assetList = await path.getAssetListPaged(page: 0, size: 100);
-
-    setState(() {
-      photos = assetList;
-    });
   }
 
   @override
@@ -60,48 +51,45 @@ class _HomepageState extends State<Homepage> {
     ScreenParams.screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       appBar: AppBar(
-
         title: Text(widget.title),
         actions: [SearchBarWidget()],
       ),
-      body: thePaths.isEmpty
-          ? Center(child: Text("Pas de photos enregistrées")) : 
-            ListView.builder(
-              itemCount: thePaths.length,
-              itemBuilder: (context,index){
-                final path = thePaths[index];
-                return ListTile(title: Text(path.name));
-              }),
-          // : ListView.builder(
-          //     itemCount: photos.length,
-          //     itemBuilder: (context, index) {
-          //       final photo = photos[index];
-          //       return FutureBuilder<File?>(
-          //         future: photo.file,
-          //         builder: (context, snapshot) {
-          //           if (!snapshot.hasData) {
-          //             return ListTile(title: Text('Loading...'));
-          //           }
-          //           final file = snapshot.data!;
-          //           return ListTile(
-          //             leading: Image.file(
-          //               file,
-          //               width: 50,
-          //               height: 50,
-          //               fit: BoxFit.cover,
-          //             ),
-          //             title: Text("Photo ${index + 1}"),
-          //             subtitle: Text(
-          //               'Date: ${photo.createDateTime}',
-          //             ),
-          //             onTap: () {
-          //               // Add action if needed
-          //             },
-          //           );
-          //         },
-          //       );
-          //     },
-          //   ),
+      body: photos.isEmpty
+          ? Center(child: Text("Pas de photos enregistrées"))
+          : ListView.builder(
+              itemCount: photos.length,
+              itemBuilder: (context, index) {
+                final photo = photos[index];
+                return FutureBuilder<File?>(
+                  future: photo.file,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return ListTile(title: Text('Loading...'));
+                    }
+                    final file = snapshot.data!;
+                    return ListTile(
+                      leading: Image.file(
+                        file,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                      title: Text("Photo ${index + 1}"),
+                      subtitle: Text(
+                        'Date: ${photo.createDateTime}',
+                      ),
+                      onTap: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  DisplayPictureFromHome(image: photo)),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
       bottomNavigationBar: Row(
         children: [
           SizedBox(
@@ -112,8 +100,9 @@ class _HomepageState extends State<Homepage> {
                       RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(0.0),
                           side: BorderSide()))),
-
-              onPressed: () {fetchPhotos();},
+              onPressed: () {
+                fetchPhotos();
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: const Icon(

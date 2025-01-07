@@ -195,7 +195,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
             await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) =>
-                    DisplayPictureScreen(imagePath: newFile.path,results: theResults,),
+                    DisplayPictureScreen(imagePath: newFile.path,results: theResults),
               ),
             );
           } catch (e) {
