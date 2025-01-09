@@ -1,10 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:front/display_image_from_load.dart';
 import 'package:front/display_picture_from_homepage.dart';
-import 'package:front/service/object_detection_service.dart';
+import 'package:front/service/detector_service_from_load.dart';
 import 'package:front/ui/camera_view_widget.dart';
 import 'package:front/models/screen_params.dart';
 import 'package:image_picker/image_picker.dart';
@@ -62,13 +64,9 @@ class _HomepageState extends State<Homepage> {
     final picker = ImagePicker();
     final XFile? newImage = await picker.pickImage(source: ImageSource.gallery);
 
-    // ignore: use_build_context_synchronously
-    Navigator.of(context)
-        .pop(); // Close the loading dialog after picking the image
+    Navigator.of(context).pop();
 
     if (newImage != null) {
-      // Pass the results and image to a new screen for display
-      // ignore: use_build_context_synchronously
       final result = await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => DisplayImageFromLoad(

@@ -12,7 +12,7 @@ class CameraViewWidget extends StatelessWidget {
     return Scaffold(
       key: GlobalKey(),
       backgroundColor: Colors.black,
-      body: const DetectorWidget(),
+      body: DetectorWidget(),
     );
   }
 }
