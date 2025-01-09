@@ -20,8 +20,6 @@ class DisplayPictureFromHome extends StatelessWidget {
               icon: Icon(Icons.format_list_bulleted)),
         ],
       ),
-      // The image is stored as a file on the device. Use the `Image.file`
-      // constructor with the given path to display the image.
       body: FutureBuilder(
         future: image.file,
         builder: (context, snapshot) {

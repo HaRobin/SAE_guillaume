@@ -84,7 +84,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
 
   @override
   Widget build(BuildContext context) {
-    // Return empty container while the camera is not initialized
+    // Return an empty container while the camera is not initialized
     if (_cameraController == null || !_controller.value.isInitialized) {
       return const SizedBox.shrink();
     }
@@ -92,42 +92,32 @@ class _DetectorWidgetState extends State<DetectorWidget>
     return Scaffold(
       body: Column(
         children: [
-          //_detectedWidget(),
+          // Your detected widget can go here if needed
           Expanded(
             child: Stack(
               children: [
-                Positioned.fill(
-                  child: AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: CameraPreview(_controller),
-                  ),
-                ),
+                CameraPreview(_controller),
                 _boundingBoxes(),
               ],
             ),
           ),
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        // Provide an onPressed callback.
         onPressed: () async {
-          // Take the Picture in a try / catch block. If anything goes wrong,
-          // catch the error.
           try {
-            // Capture the image
             final image = await _controller.takePicture();
 
             if (!context.mounted) return;
 
-            // Load the captured image into a `ui.Image`
             final capturedImage =
                 await decodeImageFromList(await image.readAsBytes());
 
-            // Create a picture recorder and canvas
+            // Create a picture and canvas
             final recorder = PictureRecorder();
             final canvas = Canvas(recorder);
 
-            // Draw the captured image
             final paint = Paint();
             canvas.drawImage(capturedImage, Offset.zero, paint);
 
@@ -136,7 +126,6 @@ class _DetectorWidgetState extends State<DetectorWidget>
 
             List<Recognition> theResults = [];
 
-            // Draw bounding boxes
             if (results != null) {
               theResults = results!;
               for (var result in theResults) {
@@ -175,22 +164,18 @@ class _DetectorWidgetState extends State<DetectorWidget>
               }
             }
 
-            // Convert the canvas to an image
             final picture = recorder.endRecording();
             final img = await picture.toImage(
               capturedImage.width,
               capturedImage.height,
             );
 
-            // Convert the image to bytes and save it
             final byteData = await img.toByteData(format: ImageByteFormat.png);
             final buffer = byteData!.buffer.asUint8List();
 
-            // Save the image to a file
             final newFilePath = '${image.path}_with_boxes.png';
             final newFile = await File(newFilePath).writeAsBytes(buffer);
 
-            // Navigate to display the new image with bounding boxes
             await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => DisplayPictureScreen(
@@ -198,8 +183,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
               ),
             );
           } catch (e) {
-            // If an error occurs, log the error to the console.
-            print(e);
+            debugPrint(e.toString());
           }
         },
         child: const Icon(Icons.camera_alt),
@@ -207,7 +191,6 @@ class _DetectorWidgetState extends State<DetectorWidget>
     );
   }
 
-  /// Returns Stack of bounding boxes
   Widget _boundingBoxes() {
     if (results == null) {
       return const SizedBox.shrink();

@@ -14,6 +14,36 @@ import 'package:front/models/recognition.dart';
 import 'package:front/utils/image_utils.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
+///////////////////////////////////////////////////////////////////////////////
+// **WARNING:** This is not production code and is only intended to be used for
+// demonstration purposes.
+//
+// The following Detector example works by spawning a background isolate and
+// communicating with it over Dart's SendPort API. It is presented below as a
+// demonstration of the feature "Background Isolate Channels" and shows using
+// plugins from a background isolate. The [Detector] operates on the root
+// isolate and the [_DetectorServer] operates on a background isolate.
+//
+// Here is an example of the protocol they use to communicate:
+//
+//  _________________                         ________________________
+//  [:Detector]                               [:_DetectorServer]
+//  -----------------                         ------------------------
+//         |                                              |
+//         |<---------------(init)------------------------|
+//         |----------------(init)----------------------->|
+//         |<---------------(ready)---------------------->|
+//         |                                              |
+//         |----------------(detect)--------------------->|
+//         |<---------------(busy)------------------------|
+//         |<---------------(result)----------------------|
+//         |                 . . .                        |
+//         |----------------(detect)--------------------->|
+//         |<---------------(busy)------------------------|
+//         |<---------------(result)----------------------|
+//
+///////////////////////////////////////////////////////////////////////////////
+
 /// All the command codes that can be sent and received between [Detector] and
 /// [_DetectorServer].
 enum _Codes {
