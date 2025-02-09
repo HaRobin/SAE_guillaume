@@ -9,7 +9,6 @@ class BoxWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Color for bounding box
     Color color = Colors.primaries[
         (result.label.length + result.label.codeUnitAt(0) + result.id) %
             Colors.primaries.length];

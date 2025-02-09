@@ -11,7 +11,8 @@ class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
   final List<Recognition> results;
 
-  const DisplayPictureScreen({super.key, required this.imagePath, required this.results});
+  const DisplayPictureScreen(
+      {super.key, required this.imagePath, required this.results});
 
   @override
   Widget build(BuildContext context) {
@@ -19,39 +20,42 @@ class DisplayPictureScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Resultats'),
         actions: [
-          IconButton(onPressed: () {showResults(context);}, icon: Icon(Icons.format_list_bulleted)),
-          IconButton(onPressed: () async { 
-            if(! await Gal.hasAccess()){
-              await Gal.requestAccess();
-            }
+          IconButton(
+              onPressed: () {
+                showResults(context);
+              },
+              icon: Icon(Icons.format_list_bulleted)),
+          IconButton(
+            onPressed: () async {
+              if (!await Gal.hasAccess()) {
+                await Gal.requestAccess();
+              }
 
-            final exif = await Exif.fromPath(imagePath);
-            for(var element in results){
-              await exif.writeAttribute(element.label, "${element.score}");
-            }
+              final exif = await Exif.fromPath(imagePath);
+              for (var element in results) {
+                await exif.writeAttribute(element.label, "${element.score}");
+              }
 
-            await exif.close();
+              await exif.close();
 
-            
-
-            Gal.putImage(imagePath,album: "GuillaumeAI");
-            showToast("Image enregistrée");
-            
-           }, icon: Icon(Icons.download),)
+              Gal.putImage(imagePath, album: "GuillaumeAI");
+              showToast("Image enregistrée");
+            },
+            icon: Icon(Icons.download),
+          )
         ],
-        
-        ),
+      ),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
       body: Image.file(File(imagePath)),
     );
   }
 
-  void showResults(BuildContext context){
+  void showResults(BuildContext context) {
     String result = "";
 
     for (var element in results) {
-      result += "- ${element.label} : ${element.score}\n" ;
+      result += "- ${element.label} : ${element.score}\n";
     }
     showDialog(
       context: context,
