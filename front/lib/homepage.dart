@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:front/display_image_from_load.dart';
 import 'package:front/display_picture_from_homepage.dart';
 import 'package:front/service/detector_service_from_load.dart';
@@ -83,6 +84,7 @@ class _HomepageState extends State<Homepage> {
     } else {
       debugPrint("No image selected.");
     }
+    HapticFeedback.heavyImpact();
   }
 
   @override
@@ -152,7 +154,8 @@ class _HomepageState extends State<Homepage> {
               onPressed: () => {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return CameraViewWidget();
-                }))
+                })),
+                HapticFeedback.heavyImpact()
               },
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10.0),

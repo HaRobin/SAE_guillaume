@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:native_exif/native_exif.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -16,6 +17,7 @@ class DisplayPictureFromHome extends StatelessWidget {
           IconButton(
               onPressed: () {
                 showResults(context);
+                HapticFeedback.heavyImpact();
               },
               icon: Icon(Icons.format_list_bulleted)),
         ],
@@ -61,6 +63,7 @@ class DisplayPictureFromHome extends StatelessWidget {
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
+                HapticFeedback.heavyImpact();
               },
             ),
           ],

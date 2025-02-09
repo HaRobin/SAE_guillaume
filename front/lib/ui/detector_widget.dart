@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:front/display_picture_screen.dart';
 import 'package:front/models/recognition.dart';
 import 'package:front/models/screen_params.dart';
@@ -182,6 +183,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
                     imagePath: newFile.path, results: theResults),
               ),
             );
+            HapticFeedback.heavyImpact();
           } catch (e) {
             debugPrint(e.toString());
           }

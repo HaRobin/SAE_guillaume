@@ -2,6 +2,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:front/models/recognition.dart';
 import 'package:gal/gal.dart';
 import 'package:native_exif/native_exif.dart';
@@ -23,6 +24,7 @@ class DisplayPictureScreen extends StatelessWidget {
           IconButton(
               onPressed: () {
                 showResults(context);
+                HapticFeedback.heavyImpact();
               },
               icon: Icon(Icons.format_list_bulleted)),
           IconButton(
@@ -40,6 +42,7 @@ class DisplayPictureScreen extends StatelessWidget {
 
               Gal.putImage(imagePath, album: "GuillaumeAI");
               showToast("Image enregistrée");
+              HapticFeedback.heavyImpact();
             },
             icon: Icon(Icons.download),
           )
@@ -68,6 +71,7 @@ class DisplayPictureScreen extends StatelessWidget {
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
+                HapticFeedback.heavyImpact();
               },
             ),
           ],
