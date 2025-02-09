@@ -35,4 +35,8 @@ export class ItemsService {
   findRecognitionsByImageId(image_id: number): Promise<Recognition[]> {
     return this.recognitionRepository.find({ where: { image_id } });
   }
+
+  findImagesByDeviceId(device_id: string): Promise<Image[]>{
+    return this.imageRepository.find({ where: { device_id } })
+  }
 }

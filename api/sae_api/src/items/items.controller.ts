@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ItemsService } from './items.service';
 
 @Controller('items')
@@ -22,5 +22,10 @@ export class ItemsController {
     @Body('confidence') confidence: number,
   ) {
     return this.itemsService.createRecognition(image_id, recognition, confidence);
+  }
+
+  @Get('recognitions/:imageid')
+  findRecognitionByImage(@Param('imageid') imageid){
+    return this.itemsService.findRecognitionsByImageId(imageid);
   }
 }
