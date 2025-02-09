@@ -28,4 +28,9 @@ export class ItemsController {
   findRecognitionByImage(@Param('imageid') imageid){
     return this.itemsService.findRecognitionsByImageId(imageid);
   }
+
+  @Get('images/:deviceid')
+  findImageByDevice(@Param('deviceid') deviceid){
+    return this.itemsService.findImagesByDeviceId(deviceid);
+  }
 }
