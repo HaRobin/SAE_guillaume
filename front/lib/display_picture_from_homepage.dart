@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:android_id/android_id.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http/http.dart' as http;
 
@@ -44,35 +45,64 @@ class DisplayPictureFromHome extends StatelessWidget {
   Future<void> showResults(BuildContext context) async {
     String result = "";
 
-    
-
     String deviceId = "unknown";
     String? maybeDeviceId = await _getDeviceId();
     if (maybeDeviceId != null) {
-      // ignore: unnecessary_cast
-      deviceId = maybeDeviceId as String;
+      deviceId = maybeDeviceId;
     }
 
+// Fetch images
     // ignore: prefer_interpolation_to_compose_strings
     final url = Uri.parse('http://141.94.115.100/items/images/' + deviceId);
+    try {
+      final resp = await http.get(url);
+      if (resp.statusCode == 200) {
+        final images = json.decode(resp.body);
 
-    final resp = await http.get(url);
-    final images = json.decode(resp.body);
+        // Filter images
+        var thefile = await image.file;
+        var splittedPath = thefile!.path.split("/");
+        var baseFileName = splittedPath.last;
 
-    final filteredImages = images.where((image) => image['path'] == image.file!.path).toList();
+        final filteredImages = images
+            .where((animage) => animage['path'].split("/").last == baseFileName)
+            .toList();
 
-    final theImage = filteredImages.first;
+        if (filteredImages.isEmpty) {
+          // ignore: prefer_interpolation_to_compose_strings
+          showToast('No images found with the specified path : ' + baseFileName);
+          return;
+        }
 
-    // ignore: prefer_interpolation_to_compose_strings
-    final recognitionsURL = Uri.parse('http://141.94.115.100/items/images/' + theImage['id']); 
+        final theImage = filteredImages.first;
 
-    final recognitionResp = await http.get(recognitionsURL);
-    final recognitions = json.decode(recognitionResp.body);
+        final recognitionsURL = Uri.parse(
+            // ignore: prefer_interpolation_to_compose_strings
+            'http://141.94.115.100/items/recognitions/' +
+                theImage['id'].toString());
+        final recognitionResp = await http.get(recognitionsURL);
 
-    for(var elem in recognitions){
-      result += "${elem['recognition']} : ${elem['confidence']}\n";
+        if (recognitionResp.statusCode == 200) {
+          final recognitions = json.decode(recognitionResp.body);
+
+          for (var elem in recognitions) {
+            result += "${elem['recognition']} : ${elem['confidence']}\n";
+          }
+        } else {
+          showToast(
+              'Failed to fetch recognitions: ${recognitionResp.statusCode}');
+          return;
+        }
+      } else {
+        showToast('Failed to fetch images: ${resp.statusCode}');
+        return;
+      }
+    } catch (e) {
+      showToast('Error during API calls: $e');
+      return;
     }
 
+// Show dialog
     if (!context.mounted) {
       return;
     }
@@ -81,7 +111,7 @@ class DisplayPictureFromHome extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Resultats'),
+          title: Text('Résultats'),
           content: Text(result),
           actions: <Widget>[
             TextButton(
