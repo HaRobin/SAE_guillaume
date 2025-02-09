@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:android_id/android_id.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:native_exif/native_exif.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:http/http.dart' as http;
 
 class DisplayPictureFromHome extends StatelessWidget {
   final AssetEntity image;
@@ -39,12 +44,34 @@ class DisplayPictureFromHome extends StatelessWidget {
   Future<void> showResults(BuildContext context) async {
     String result = "";
 
-    final file = await image.file;
-    final exif = await Exif.fromPath(file!.path);
+    
 
-    final attributes = await exif.getAttributes();
+    String deviceId = "unknown";
+    String? maybeDeviceId = await _getDeviceId();
+    if (maybeDeviceId != null) {
+      // ignore: unnecessary_cast
+      deviceId = maybeDeviceId as String;
+    }
 
-    attributes!.forEach((k, v) => result += "$k : $v\n");
+    // ignore: prefer_interpolation_to_compose_strings
+    final url = Uri.parse('http://141.94.115.100/items/images/' + deviceId);
+
+    final resp = await http.get(url);
+    final images = json.decode(resp.body);
+
+    final filteredImages = images.where((image) => image['path'] == image.file!.path).toList();
+
+    final theImage = filteredImages.first;
+
+    // ignore: prefer_interpolation_to_compose_strings
+    final recognitionsURL = Uri.parse('http://141.94.115.100/items/images/' + theImage['id']); 
+
+    final recognitionResp = await http.get(recognitionsURL);
+    final recognitions = json.decode(recognitionResp.body);
+
+    for(var elem in recognitions){
+      result += "${elem['recognition']} : ${elem['confidence']}\n";
+    }
 
     if (!context.mounted) {
       return;
@@ -67,5 +94,18 @@ class DisplayPictureFromHome extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<String?> _getDeviceId() async {
+    var deviceInfo = DeviceInfoPlugin();
+    if (Platform.isIOS) {
+      var iosDeviceInfo = await deviceInfo.iosInfo;
+      return iosDeviceInfo.identifierForVendor;
+    } else if (Platform.isAndroid) {
+      // ignore: unused_local_variable
+      var androidDeviceInfo = await deviceInfo.androidInfo;
+      return AndroidId().getId();
+    }
+    return null;
   }
 }

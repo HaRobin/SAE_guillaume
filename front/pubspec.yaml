@@ -45,6 +45,9 @@ dependencies:
   native_exif: ^0.6.0
   photo_manager: ^3.6.3
   oktoast: ^3.4.0
+  device_info_plus: ^11.3.0
+  android_id: ^0.4.0
+  http: ^1.3.0
 
 dev_dependencies:
   flutter_test:
