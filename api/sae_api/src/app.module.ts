@@ -7,7 +7,7 @@ import { ItemsModule } from './items/items.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'mariadb',
       host: 'localhost',
       port: 3306,
       username: 'saeuser', 
