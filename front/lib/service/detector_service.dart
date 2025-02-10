@@ -77,6 +77,7 @@ class Detector {
     // Use XNNPACK Delegate
     if (Platform.isAndroid) {
       interpreterOptions.addDelegate(XNNPackDelegate());
+      interpreterOptions.addDelegate(GpuDelegateV2());
     }
 
     return Interpreter.fromAsset(

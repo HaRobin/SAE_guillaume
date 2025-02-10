@@ -38,6 +38,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+     <uses-library android:name="libOpenCL.so" android:required="false"/>
+        
     </application>
 
     <!-- Required to query activities that can process text, see:
