@@ -1,7 +1,3 @@
-// Copyright 2023 The Flutter team. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
@@ -12,40 +8,10 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as image_lib;
 import 'package:front/models/recognition.dart';
 import 'package:front/utils/image_utils.dart';
+import 'package:image/image.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:front/models/nms.dart';
 
-///////////////////////////////////////////////////////////////////////////////
-// **WARNING:** This is not production code and is only intended to be used for
-// demonstration purposes.
-//
-// The following Detector example works by spawning a background isolate and
-// communicating with it over Dart's SendPort API. It is presented below as a
-// demonstration of the feature "Background Isolate Channels" and shows using
-// plugins from a background isolate. The [Detector] operates on the root
-// isolate and the [_DetectorServer] operates on a background isolate.
-//
-// Here is an example of the protocol they use to communicate:
-//
-//  _________________                         ________________________
-//  [:Detector]                               [:_DetectorServer]
-//  -----------------                         ------------------------
-//         |                                              |
-//         |<---------------(init)------------------------|
-//         |----------------(init)----------------------->|
-//         |<---------------(ready)---------------------->|
-//         |                                              |
-//         |----------------(detect)--------------------->|
-//         |<---------------(busy)------------------------|
-//         |<---------------(result)----------------------|
-//         |                 . . .                        |
-//         |----------------(detect)--------------------->|
-//         |<---------------(busy)------------------------|
-//         |<---------------(result)----------------------|
-//
-///////////////////////////////////////////////////////////////////////////////
-
-/// All the command codes that can be sent and received between [Detector] and
-/// [_DetectorServer].
 enum _Codes {
   init,
   busy,
@@ -68,8 +34,8 @@ class _Command {
 /// are executed in a background isolate.
 /// This class just sends and receives messages to the isolate.
 class Detector {
-  static const String _modelPath = 'assets/models/ssd_mobilenet.tflite';
-  static const String _labelPath = 'assets/models/labelmap.txt';
+  static const String _modelPath = 'assets/models/yolov8_cards.tflite';
+  static const String _labelPath = 'assets/models/labelcard.txt';
 
   Detector._(this._isolate, this._interpreter, this._labels);
 
@@ -136,12 +102,6 @@ class Detector {
     switch (command.code) {
       case _Codes.init:
         _sendPort = command.args?[0] as SendPort;
-        // ----------------------------------------------------------------------
-        // Before using platform channels and plugins from background isolates we
-        // need to register it with its root isolate. This is achieved by
-        // acquiring a [RootIsolateToken] which the background isolate uses to
-        // invoke [BackgroundIsolateBinaryMessenger.ensureInitialized].
-        // ----------------------------------------------------------------------
         RootIsolateToken rootIsolateToken = RootIsolateToken.instance!;
         _sendPort.send(_Command(_Codes.init, args: [
           rootIsolateToken,
@@ -160,7 +120,6 @@ class Detector {
     }
   }
 
-  /// Kills the background isolate and its detector server.
   void stop() {
     _isolate.kill();
   }
@@ -171,11 +130,6 @@ class Detector {
 /// This is where we use the new feature Background Isolate Channels, which
 /// allows us to use plugins from background isolates.
 class _DetectorServer {
-  /// Input size of image (height = width = 300)
-  static const int mlModelInputSize = 300;
-
-  /// Result confidence threshold
-  static const double confidence = 0.5;
   Interpreter? _interpreter;
   List<String>? _labels;
 
@@ -237,6 +191,14 @@ class _DetectorServer {
         if (Platform.isAndroid) {
           image = image_lib.copyRotate(image, angle: 90);
         }
+        debugPrint('Convert IMAAAAAGE -------');
+        debugPrint('Width');
+        debugPrint(image.width.toString());
+        debugPrint('Height');
+        debugPrint(image.height.toString());
+
+        debugPrint('Screen size');
+        debugPrint('Screen size');
 
         final results = analyseImage(image, preConversionTime);
         _sendPort.send(_Command(_Codes.result, args: [results]));
@@ -251,70 +213,40 @@ class _DetectorServer {
 
     var preProcessStart = DateTime.now().millisecondsSinceEpoch;
 
-    /// Pre-process the image
-    /// Resizing image for model [300, 300]
-    final imageInput = image_lib.copyResize(
-      image!,
-      width: mlModelInputSize,
-      height: mlModelInputSize,
-    );
-
-    // Creating matrix representation, [300, 300, 3]
-    final imageMatrix = List.generate(
-      imageInput.height,
-      (y) => List.generate(
-        imageInput.width,
-        (x) {
-          final pixel = imageInput.getPixel(x, y);
-          return [pixel.r, pixel.g, pixel.b];
-        },
-      ),
-    );
-
     var preProcessElapsedTime =
         DateTime.now().millisecondsSinceEpoch - preProcessStart;
 
     var inferenceTimeStart = DateTime.now().millisecondsSinceEpoch;
 
-    final output = _runInference(imageMatrix);
+    final (newClasses, newBboxes, newScores) = inferAndPostprocess(image!);
 
     // Location
-    final locationsRaw = output.first.first as List<List<double>>;
-
-    final List<Rect> locations = locationsRaw
-        .map((list) => list.map((value) => (value * mlModelInputSize)).toList())
-        .map((rect) => Rect.fromLTRB(rect[1], rect[0], rect[3], rect[2]))
-        .toList();
+    final locationsRaw = newBboxes;
+    final locations = locationsRaw.map((list) {
+      return list.map((value) => value.toInt()).toList();
+    }).toList();
 
     // Classes
-    final classesRaw = output.elementAt(1).first as List<double>;
-    final classes = classesRaw.map((value) => value.toInt()).toList();
+    final classes = newClasses.map((value) => value.toInt()).toList();
 
-    // Scores
-    final scores = output.elementAt(2).first as List<double>;
-
-    // Number of detections
-    final numberOfDetectionsRaw = output.last.first as double;
-    final numberOfDetections = numberOfDetectionsRaw.toInt();
-
-    final List<String> classification = [];
-    for (var i = 0; i < numberOfDetections; i++) {
-      classification.add(_labels![classes[i]]);
+    final List<String> classication = [];
+    for (var i = 0; i < newBboxes.length; i++) {
+      classication.add(_labels![classes[i]]);
     }
 
     /// Generate recognitions
     List<Recognition> recognitions = [];
-    for (int i = 0; i < numberOfDetections; i++) {
-      // Prediction score
-      var score = scores[i];
-      // Label string
-      var label = classification[i];
-
-      if (score > confidence) {
-        recognitions.add(
-          Recognition(i, label, score, locations[i]),
-        );
-      }
+    for (var i = 0; i < newBboxes.length; i++) {
+      debugPrint('-----------------------------------');
+      debugPrint(locations[i].toString());
+      final x1 = locations[i][0].toDouble();
+      final y1 = locations[i][1].toDouble();
+      final x2 = locations[i][2].toDouble();
+      final y2 = locations[i][3].toDouble();
+      Rect location = Rect.fromLTWH(x1, y1, x2, y2);
+      debugPrint(location.toString());
+      debugPrint('-----------------------------------');
+      recognitions.add(Recognition(i, classication[i], newScores[i], location));
     }
 
     var inferenceElapsedTime =
@@ -336,25 +268,74 @@ class _DetectorServer {
   }
 
   /// Object detection main function
-  List<List<Object>> _runInference(
-    List<List<List<num>>> imageMatrix,
-  ) {
-    // Set input tensor [1, 300, 300, 3]
-    final input = [imageMatrix];
+  List<List<double>> _infer(Image image) {
+    assert(_interpreter != null, 'The model must be initialized');
 
-    // Set output tensor
-    // Locations: [1, 10, 4]
-    // Classes: [1, 10],
-    // Scores: [1, 10],
-    // Number of detections: [1]
-    final output = {
-      0: [List<List<num>>.filled(10, List<num>.filled(4, 0))],
-      1: [List<num>.filled(10, 0)],
-      2: [List<num>.filled(10, 0)],
-      3: [0.0],
-    };
+    final imgResized = copyResize(image, width: 640, height: 640);
+    final imgNormalized = List.generate(
+      640,
+      (y) => List.generate(
+        640,
+        (x) {
+          final pixel = imgResized.getPixel(x, y);
+          return [pixel.rNormalized, pixel.gNormalized, pixel.bNormalized];
+        },
+      ),
+    );
 
-    _interpreter!.runForMultipleInputs([input], output);
-    return output.values.toList();
+    final output = [
+      List<List<double>>.filled(4 + 52, List<double>.filled(8400, 0))
+    ];
+    int predictionTimeStart = DateTime.now().millisecondsSinceEpoch;
+    _interpreter!.run([imgNormalized], output);
+    debugPrint(
+        'Prediction time: ${DateTime.now().millisecondsSinceEpoch - predictionTimeStart} ms');
+    return output[0];
   }
+
+  (List<int>, List<List<double>>, List<double>) postprocess(
+    List<List<double>> unfilteredBboxes,
+    int imageWidth,
+    int imageHeight, {
+    double confidenceThreshold = 0.3,
+    double iouThreshold = 0.1,
+    bool agnostic = false,
+  }) {
+    List<int> classes;
+    List<List<double>> bboxes;
+    List<double> scores;
+    int nmsTimeStart = DateTime.now().millisecondsSinceEpoch;
+    (classes, bboxes, scores) = nms(
+      unfilteredBboxes,
+      confidenceThreshold: confidenceThreshold,
+      iouThreshold: iouThreshold,
+      agnostic: agnostic,
+    );
+    debugPrint(
+        'NMS time: ${DateTime.now().millisecondsSinceEpoch - nmsTimeStart} ms');
+
+    debugPrint(bboxes.toString());
+    for (var bbox in bboxes) {
+      bbox[0] *= imageWidth;
+      bbox[1] *= imageHeight;
+      bbox[2] *= imageWidth;
+      bbox[3] *= imageHeight;
+    }
+    return (classes, bboxes, scores);
+  }
+
+  (List<int>, List<List<double>>, List<double>) inferAndPostprocess(
+    Image image, {
+    double confidenceThreshold = 0.3,
+    double iouThreshold = 0.4,
+    bool agnostic = false,
+  }) =>
+      postprocess(
+        _infer(image),
+        image.width,
+        image.height,
+        confidenceThreshold: confidenceThreshold,
+        iouThreshold: iouThreshold,
+        agnostic: agnostic,
+      );
 }
