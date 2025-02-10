@@ -41,7 +41,7 @@ class DisplayImageFromLoad extends StatelessWidget {
             onPressed: () async {
               final image = await imageFuture;
               await _saveAndProcessImage(image, context);
-              HapticFeedback.heavyImpact();
+              HapticFeedback.vibrate();
             },
             icon: const Icon(Icons.download),
           ),

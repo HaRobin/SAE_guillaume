@@ -17,7 +17,7 @@ class DisplayPictureFromHome extends StatelessWidget {
           IconButton(
               onPressed: () {
                 showResults(context);
-                HapticFeedback.heavyImpact();
+                HapticFeedback.vibrate();
               },
               icon: Icon(Icons.format_list_bulleted)),
         ],
@@ -63,7 +63,7 @@ class DisplayPictureFromHome extends StatelessWidget {
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
-                HapticFeedback.heavyImpact();
+                HapticFeedback.vibrate();
               },
             ),
           ],

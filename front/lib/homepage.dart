@@ -84,7 +84,7 @@ class _HomepageState extends State<Homepage> {
     } else {
       debugPrint("No image selected.");
     }
-    HapticFeedback.heavyImpact();
+    HapticFeedback.vibrate();
   }
 
   @override
@@ -155,7 +155,7 @@ class _HomepageState extends State<Homepage> {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return CameraViewWidget();
                 })),
-                HapticFeedback.heavyImpact()
+                HapticFeedback.vibrate()
               },
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10.0),

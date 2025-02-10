@@ -217,7 +217,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
                     imagePath: newFile.path, results: theResults),
               ),
             );
-            HapticFeedback.heavyImpact();
+            HapticFeedback.vibrate();
           } catch (e) {
             debugPrint(e.toString());
           }
