@@ -9,6 +9,7 @@ class YoloModel {
   final int inHeight;
   final int numClasses;
   Interpreter? _interpreter;
+  IsolateInterpreter? _isolateInterpreter;
 
   YoloModel(
     this.modelPath,
@@ -17,12 +18,22 @@ class YoloModel {
     this.numClasses,
   );
 
-  Future<void> init() async {
-    _interpreter = await Interpreter.fromAsset(modelPath);
+  get address {
+    return _isolateInterpreter!.address;
   }
 
-  List<List<double>> infer(Image image) {
-    assert(_interpreter != null, 'The model must be initialized');
+  Future<void> init() async {
+    final interpreterOptions = InterpreterOptions();
+    _interpreter = await Interpreter.fromAsset(
+      modelPath,
+      options: interpreterOptions..threads = 4,
+    );
+    _isolateInterpreter =
+        await IsolateInterpreter.create(address: _interpreter!.address);
+  }
+
+  Future<List<List<double>>> infer(Image image) async {
+    assert(_isolateInterpreter != null, 'The model must be initialized');
 
     final imgResized = copyResize(image, width: inWidth, height: inHeight);
     final imgNormalized = List.generate(
@@ -40,7 +51,7 @@ class YoloModel {
       List<List<double>>.filled(4 + numClasses, List<double>.filled(8400, 0))
     ];
     int predictionTimeStart = DateTime.now().millisecondsSinceEpoch;
-    _interpreter!.run([imgNormalized], output);
+    await _isolateInterpreter!.run([imgNormalized], output);
     debugPrint(
         'Prediction time: ${DateTime.now().millisecondsSinceEpoch - predictionTimeStart} ms');
     return output[0];
@@ -75,14 +86,14 @@ class YoloModel {
     return (classes, bboxes, scores);
   }
 
-  (List<int>, List<List<double>>, List<double>) inferAndPostprocess(
+  Future<(List<int>, List<List<double>>, List<double>)> inferAndPostprocess(
     Image image, {
-    double confidenceThreshold = 0.7,
+    double confidenceThreshold = 0.5,
     double iouThreshold = 0.1,
     bool agnostic = false,
-  }) =>
+  }) async =>
       postprocess(
-        infer(image),
+        await infer(image),
         image.width,
         image.height,
         confidenceThreshold: confidenceThreshold,

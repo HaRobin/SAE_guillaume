@@ -28,20 +28,19 @@ class Recognition {
 
   Rect get location => _location;
 
-  /// Returns bounding box rectangle corresponding to the
-  /// displayed image on screen
-  ///
-  /// This is the actual location where rectangle is rendered on
-  /// the screen
   Rect get renderLocation {
-    final double scaleX = ScreenParams.screenPreviewSize.width / 300;
-    final double scaleY = ScreenParams.screenPreviewSize.height / 300;
-    return Rect.fromLTWH(
-      location.left * scaleX,
-      location.top * scaleY,
-      location.width * scaleX,
-      location.height * scaleY,
+    final double scaleX = ScreenParams.screenPreviewSize.width / 720;
+    final double scaleY = ScreenParams.screenPreviewSize.height / 1280;
+
+    final rect = Rect.fromLTWH(
+      location.left * scaleX - 15,
+      location.top * scaleY - 15,
+      location.width * scaleX + 5,
+      location.height * scaleY + 5,
     );
+
+    debugPrint(rect.toString());
+    return rect;
   }
 
   @override

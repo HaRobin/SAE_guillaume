@@ -32,7 +32,7 @@ class ObjectDetection {
     final image = img.decodeImage(imageData);
 
     final (newClasses, newBboxes, newScores) =
-        model!.inferAndPostprocess(image!);
+        await model!.inferAndPostprocess(image!);
 
     // Location
     final locationsRaw = newBboxes;
@@ -50,39 +50,42 @@ class ObjectDetection {
 
     //box
     for (var i = 0; i < newBboxes.length; i++) {
+      final x1 = locations[i][0] - locations[i][2] ~/ 2;
+      final y1 = locations[i][1] - locations[i][3] ~/ 2;
+      final x2 = locations[i][0] + locations[i][2] ~/ 2;
+      final y2 = locations[i][1] + locations[i][3] ~/ 2;
+
+      debugPrint('-RAHAAAAAAAAA---------------------');
       debugPrint(locations[i].toString());
-      if (newScores[i] > 0.1) {
-        final x1 = locations[i][0] - locations[i][2] ~/ 2;
-        final y1 = locations[i][1] - locations[i][3] ~/ 2;
-        final x2 = locations[i][0] + locations[i][2] ~/ 2;
-        final y2 = locations[i][1] + locations[i][3] ~/ 2;
+      debugPrint(x1.toString());
+      debugPrint(y1.toString());
+      debugPrint(x2.toString());
+      debugPrint(y2.toString());
 
-        //Dessins
-        img.drawRect(
-          image,
-          x1: x1,
-          y1: y1,
-          x2: x2,
-          y2: y2,
-          color: img.ColorRgb8(255, 0, 0),
-          thickness: 10,
-        );
+      //Dessins
+      img.drawRect(
+        image,
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2,
+        color: img.ColorRgb8(255, 0, 0),
+        thickness: 10,
+      );
 
-        final labelText =
-            '${classication[i]} ${newScores[i].toStringAsFixed(2)}';
+      final labelText = '${classication[i]} ${newScores[i].toStringAsFixed(2)}';
 
-        final labelX = x1 + 5;
-        final labelY = y1 + 20;
+      final labelX = x1 + 5;
+      final labelY = y1 + 20;
 
-        img.drawString(
-          image,
-          labelText,
-          font: img.arial48,
-          x: labelX,
-          y: labelY,
-          color: img.ColorRgb8(50, 50, 50),
-        );
-      }
+      img.drawString(
+        image,
+        labelText,
+        font: img.arial48,
+        x: labelX,
+        y: labelY,
+        color: img.ColorRgb8(50, 50, 50),
+      );
     }
 
     return img.encodeJpg(image);
