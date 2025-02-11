@@ -9,6 +9,14 @@ class BoxWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('-------------DEDANS LA BOUNDING BOOOOOOOOOXES---------------');
+    debugPrint(result.renderLocation.toString());
+    debugPrint(result.renderLocation.left.toString());
+    debugPrint(result.renderLocation.top.toString());
+    debugPrint(result.renderLocation.width.toString());
+    debugPrint(result.renderLocation.height.toString());
+
+    debugPrint('-------------------------------');
     Color color = Colors.primaries[
         (result.label.length + result.label.codeUnitAt(0) + result.id) %
             Colors.primaries.length];

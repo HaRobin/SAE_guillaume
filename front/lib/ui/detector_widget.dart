@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:front/display_picture_screen.dart';
 import 'package:front/models/recognition.dart';
 import 'package:front/models/screen_params.dart';
@@ -40,6 +41,9 @@ class _DetectorWidgetState extends State<DetectorWidget>
   /// Results to draw bounding boxes
   List<Recognition>? results;
 
+  // Light torch
+  bool _isTorchOn = false;
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +60,12 @@ class _DetectorWidgetState extends State<DetectorWidget>
         _detector = instance;
         _subscription = instance.resultsStream.stream.listen((values) {
           setState(() {
+            debugPrint(MediaQuery.of(context).size.width.toString());
+            debugPrint(MediaQuery.of(context).size.height.toString());
             results = values['recognitions'];
+            debugPrint('---------DETECTOR WIDGET------------');
+            debugPrint(results.toString());
+            debugPrint('---------------------');
           });
         });
       });
@@ -69,7 +78,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
     // cameras[0] for back-camera
     _cameraController = CameraController(
       cameras[0],
-      ResolutionPreset.veryHigh,
+      ResolutionPreset.high,
       enableAudio: false,
     )..initialize().then((_) async {
         await _controller.startImageStream(onLatestImageAvailable);
@@ -92,12 +101,43 @@ class _DetectorWidgetState extends State<DetectorWidget>
     return Scaffold(
       body: Column(
         children: [
-          // Your detected widget can go here if needed
           Expanded(
             child: Stack(
               children: [
-                CameraPreview(_controller),
+                Positioned.fill(
+                  child: AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: CameraPreview(_controller),
+                  ),
+                ),
                 _boundingBoxes(),
+                // Ajout du bouton lampe torche
+                Positioned(
+                  top: 40,
+                  right: 20,
+                  child: FloatingActionButton(
+                    onPressed: () async {
+                      if (_controller != null &&
+                          _controller.value.isInitialized) {
+                        try {
+                          await _controller.setFlashMode(
+                            _isTorchOn ? FlashMode.off : FlashMode.torch,
+                          );
+                          setState(() {
+                            _isTorchOn = !_isTorchOn;
+                          });
+                        } catch (e) {
+                          debugPrint("Erreur en activant la lampe torche : $e");
+                        }
+                      }
+                    },
+                    backgroundColor: Colors.black54,
+                    child: Icon(
+                      _isTorchOn ? Icons.flash_off : Icons.flash_on,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -121,8 +161,8 @@ class _DetectorWidgetState extends State<DetectorWidget>
             final paint = Paint();
             canvas.drawImage(capturedImage, Offset.zero, paint);
 
-            final double scaleX = capturedImage.width / 300;
-            final double scaleY = capturedImage.height / 300;
+            final double scaleX = capturedImage.width / 720;
+            final double scaleY = capturedImage.height / 1280;
 
             List<Recognition> theResults = [];
 
@@ -135,10 +175,10 @@ class _DetectorWidgetState extends State<DetectorWidget>
                     Colors.primaries.length];
 
                 final rect = Rect.fromLTWH(
-                  result.location.left * scaleX,
-                  result.location.top * scaleY,
-                  result.location.width * scaleX,
-                  result.location.height * scaleY,
+                  result.location.left * scaleX - 15,
+                  result.location.top * scaleY - 15,
+                  result.location.width * scaleX + 5,
+                  result.location.height * scaleY + 5,
                 );
                 final boxPaint = Paint()
                   ..color = color
@@ -182,6 +222,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
                     imagePath: newFile.path, results: theResults),
               ),
             );
+            HapticFeedback.vibrate();
           } catch (e) {
             debugPrint(e.toString());
           }
@@ -195,6 +236,10 @@ class _DetectorWidgetState extends State<DetectorWidget>
     if (results == null) {
       return const SizedBox.shrink();
     }
+    debugPrint('-------------BOUNDING BOOOOOOOOOXES---------------');
+    debugPrint(
+        results!.map((box) => BoxWidget(result: box)).toList().toString());
+    debugPrint('-------------------------------');
     return Stack(
         children: results!.map((box) => BoxWidget(result: box)).toList());
   }

@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:gal/gal.dart';
 import 'package:native_exif/native_exif.dart';
@@ -40,6 +41,7 @@ class DisplayImageFromLoad extends StatelessWidget {
             onPressed: () async {
               final image = await imageFuture;
               await _saveAndProcessImage(image, context);
+              HapticFeedback.vibrate();
             },
             icon: const Icon(Icons.download),
           ),

@@ -6,31 +6,6 @@ import 'package:front/homepage.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-/*
-Future<void> main() async {
-  
-  // Ensure that plugin services are initialized so that `availableCameras()`
-  // can be called before `runApp()`
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Obtain a list of the available cameras on the device.
-  final cameralist = await availableCameras();
-  print(cameralist);
-  // Get a specific camera from the list of available cameras.
-  final firstCamera = cameralist.first;
-
-  runApp(
-    MaterialApp(
-      theme: ThemeData.dark(),
-      home: TakePictureScreen(
-        // Pass the appropriate camera to the TakePictureScreen widget.
-        camera: firstCamera,
-        cameras: cameralist,
-      ),
-    ),
-  );
-}
-*/
 late List<CameraDescription> cameras;
 
 Future<Null> main() async {
@@ -54,6 +29,32 @@ class MyApp extends StatelessWidget {
         title: 'tflite real-time detection',
         theme: ThemeData(
           brightness: Brightness.dark,
+          scaffoldBackgroundColor: Colors.pink[900], // Dark pink background
+          primaryColor: Colors.pink, // Primary theme color
+          hintColor: Colors.pinkAccent, // Accent color for hints & highlights
+          colorScheme: ColorScheme.dark(
+            primary: Colors.pink, // Main color for app
+            secondary: Colors.pinkAccent, // Secondary color (FAB, highlights)
+            surface: Colors.pink[800]!, // Card & dialog backgrounds
+            onPrimary: Colors.white, // Text color on primary color
+            onSecondary: Colors.black, // Text on secondary color
+            onSurface: Colors.white, // Text on cards & dialogs
+          ),
+          appBarTheme: AppBarTheme(
+            backgroundColor: Colors.pink[700], // AppBar background
+            foregroundColor: Colors.white, // AppBar text & icons
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.pink, // Button color
+              foregroundColor: Colors.white, // Text color on button
+            ),
+          ),
+          textTheme: TextTheme(
+            bodyLarge: TextStyle(color: Colors.white), // Large text
+            bodyMedium: TextStyle(color: Colors.white), // Normal text
+            bodySmall: TextStyle(color: Colors.white70), // Small text
+          ),
         ),
         home: Homepage(title: "Guillaume", cameras: cameras),
       ),

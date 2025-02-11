@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:front/desciption.dart';
 import 'package:front/display_image_from_load.dart';
 import 'package:front/display_picture_from_homepage.dart';
 import 'package:front/service/detector_service_from_load.dart';
@@ -83,6 +85,7 @@ class _HomepageState extends State<Homepage> {
     } else {
       debugPrint("No image selected.");
     }
+    HapticFeedback.vibrate();
   }
 
   @override
@@ -133,7 +136,7 @@ class _HomepageState extends State<Homepage> {
       bottomNavigationBar: Row(
         children: [
           SizedBox(
-            width: (ScreenParams.screenSize.width / 2),
+            width: (ScreenParams.screenSize.width / 3),
             child: ElevatedButton(
               onPressed: processNewImage,
               child: const Padding(
@@ -147,17 +150,36 @@ class _HomepageState extends State<Homepage> {
             ),
           ),
           SizedBox(
-            width: (ScreenParams.screenSize.width / 2),
+            width: (ScreenParams.screenSize.width / 3),
             child: ElevatedButton(
               onPressed: () => {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return CameraViewWidget();
-                }))
+                })),
+                HapticFeedback.vibrate()
               },
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10.0),
                 child: Icon(
                   Icons.photo_camera,
+                  color: Colors.white,
+                  size: 35.0,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: (ScreenParams.screenSize.width / 3),
+            child: ElevatedButton(
+              onPressed: () => {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return DescriptionPage();
+                }))
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10.0),
+                child: Icon(
+                  Icons.description,
                   color: Colors.white,
                   size: 35.0,
                 ),
