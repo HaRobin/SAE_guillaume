@@ -4,7 +4,12 @@ import 'dart:io';
 import 'package:android_id/android_id.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+
+import 'package:flutter/services.dart';
+import 'package:native_exif/native_exif.dart';
+
 import 'package:oktoast/oktoast.dart';
+
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http/http.dart' as http;
 
@@ -22,6 +27,7 @@ class DisplayPictureFromHome extends StatelessWidget {
           IconButton(
               onPressed: () {
                 showResults(context);
+                HapticFeedback.vibrate();
               },
               icon: Icon(Icons.format_list_bulleted)),
         ],
@@ -118,6 +124,7 @@ class DisplayPictureFromHome extends StatelessWidget {
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
+                HapticFeedback.vibrate();
               },
             ),
           ],

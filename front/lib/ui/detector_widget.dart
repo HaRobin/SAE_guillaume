@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:front/display_picture_screen.dart';
 import 'package:front/models/recognition.dart';
 import 'package:front/models/screen_params.dart';
@@ -39,6 +40,9 @@ class _DetectorWidgetState extends State<DetectorWidget>
 
   /// Results to draw bounding boxes
   List<Recognition>? results;
+
+  // Light torch
+  bool _isTorchOn = false;
 
   @override
   void initState() {
@@ -97,12 +101,43 @@ class _DetectorWidgetState extends State<DetectorWidget>
     return Scaffold(
       body: Column(
         children: [
-          // Your detected widget can go here if needed
           Expanded(
             child: Stack(
               children: [
-                CameraPreview(_controller),
+                Positioned.fill(
+                  child: AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: CameraPreview(_controller),
+                  ),
+                ),
                 _boundingBoxes(),
+                // Ajout du bouton lampe torche
+                Positioned(
+                  top: 40,
+                  right: 20,
+                  child: FloatingActionButton(
+                    onPressed: () async {
+                      if (_controller != null &&
+                          _controller.value.isInitialized) {
+                        try {
+                          await _controller.setFlashMode(
+                            _isTorchOn ? FlashMode.off : FlashMode.torch,
+                          );
+                          setState(() {
+                            _isTorchOn = !_isTorchOn;
+                          });
+                        } catch (e) {
+                          debugPrint("Erreur en activant la lampe torche : $e");
+                        }
+                      }
+                    },
+                    backgroundColor: Colors.black54,
+                    child: Icon(
+                      _isTorchOn ? Icons.flash_off : Icons.flash_on,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -187,6 +222,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
                     imagePath: newFile.path, results: theResults),
               ),
             );
+            HapticFeedback.vibrate();
           } catch (e) {
             debugPrint(e.toString());
           }
