@@ -60,7 +60,12 @@ class _DetectorWidgetState extends State<DetectorWidget>
         _detector = instance;
         _subscription = instance.resultsStream.stream.listen((values) {
           setState(() {
+            debugPrint(MediaQuery.of(context).size.width.toString());
+            debugPrint(MediaQuery.of(context).size.height.toString());
             results = values['recognitions'];
+            debugPrint('---------DETECTOR WIDGET------------');
+            debugPrint(results.toString());
+            debugPrint('---------------------');
           });
         });
       });
@@ -73,7 +78,7 @@ class _DetectorWidgetState extends State<DetectorWidget>
     // cameras[0] for back-camera
     _cameraController = CameraController(
       cameras[0],
-      ResolutionPreset.veryHigh,
+      ResolutionPreset.high,
       enableAudio: false,
     )..initialize().then((_) async {
         await _controller.startImageStream(onLatestImageAvailable);
@@ -156,8 +161,8 @@ class _DetectorWidgetState extends State<DetectorWidget>
             final paint = Paint();
             canvas.drawImage(capturedImage, Offset.zero, paint);
 
-            final double scaleX = capturedImage.width / 300;
-            final double scaleY = capturedImage.height / 300;
+            final double scaleX = capturedImage.width / 720;
+            final double scaleY = capturedImage.height / 1280;
 
             List<Recognition> theResults = [];
 
@@ -170,10 +175,10 @@ class _DetectorWidgetState extends State<DetectorWidget>
                     Colors.primaries.length];
 
                 final rect = Rect.fromLTWH(
-                  result.location.left * scaleX,
-                  result.location.top * scaleY,
-                  result.location.width * scaleX,
-                  result.location.height * scaleY,
+                  result.location.left * scaleX - 15,
+                  result.location.top * scaleY - 15,
+                  result.location.width * scaleX + 5,
+                  result.location.height * scaleY + 5,
                 );
                 final boxPaint = Paint()
                   ..color = color
@@ -231,6 +236,10 @@ class _DetectorWidgetState extends State<DetectorWidget>
     if (results == null) {
       return const SizedBox.shrink();
     }
+    debugPrint('-------------BOUNDING BOOOOOOOOOXES---------------');
+    debugPrint(
+        results!.map((box) => BoxWidget(result: box)).toList().toString());
+    debugPrint('-------------------------------');
     return Stack(
         children: results!.map((box) => BoxWidget(result: box)).toList());
   }
